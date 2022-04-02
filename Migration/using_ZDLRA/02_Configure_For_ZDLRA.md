@@ -86,3 +86,34 @@ List credential (index: connect_string username)
 1: CONNECT_TO_ZDLRA rasys_user
 $
 ```
+
+---
+
+# sqlnet.ora
+
+### We will add wallet configuration to `sqlnet.ora`
+
+vi $ORACLE_HOME/network/admin/sqlnet.ora
+```
+### add following 2 entries to "sqlnet.ora" file in DBHome
+SQLNET.WALLET_OVERRIDE = true
+WALLET_LOCATION = (SOURCE = (METHOD = FILE) (METHOD_DATA = (DIRECTORY = /mnt01/oracle/product/DBHome11204/dbs/wallet )))
+```
+
+---
+
+# verify password-less login using credentials stored in wallet
+
+```
+sqlplus /@CONNECT_TO_ZDLRA
+
+SQL*Plus: Release 11.2.0.4.0 Production on Mon Mar 21 03:23:00 2022
+Copyright (c) 1982, 2013, Oracle.  All rights reserved.
+
+Connected to:
+Oracle Database 19c Enterprise Edition Release 19.0.0.0.0 - Production
+
+SQL>
+```
+
+---
