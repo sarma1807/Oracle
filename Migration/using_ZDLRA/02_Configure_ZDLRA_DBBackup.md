@@ -1,6 +1,6 @@
 # libra.so
 
-To interact with ZDLRA, first thing we need is the `libra.so` file
+### To interact with ZDLRA, first thing we need is the `libra.so` file
 
 ```
 ZDLRA: Where to download new sbt library (libra.so module) (Oracle Support Doc ID 2219812.1)
