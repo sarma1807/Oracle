@@ -14,7 +14,7 @@ SBT = Serial Backup Tape
 We need to download this very small 91mb `libra.so` file and place it in `$ORACLE_HOME/lib/` folder
 ```
 $ ls -lh $ORACLE_HOME/lib/libra.so
--rw-r--r-- 1 oracle oinstall 91M Mar 21  2022 /mnt01/oracle/product/DBHome11204/lib/libra.so
+-rw-r--r-- 1 oracle oinstall 91M Mar 21 2022 /mnt01/oracle/product/DBHome11204/lib/libra.so
 $
 ```
 
@@ -43,4 +43,46 @@ VERSION >>>>>>>> sbtinit: Media manager is version 19.0.0.1
 
 # Wallet to Connect to ZDLRA
 
-We will connect to ZDLRA using credentials stored in a wallet
+### We will connect to ZDLRA using credentials stored in a wallet
+
+```
+# create empty wallet
+
+export WALLET_LOCATION=$ORACLE_HOME/dbs/wallet
+
+mkdir $WALLET_LOCATION
+
+$ORACLE_HOME/bin/orapki wallet create -wallet $WALLET_LOCATION -auto_login_only
+Oracle PKI Tool : Version 11.2.0.4.0 - Production
+Copyright (c) 2004, 2013, Oracle and/or its affiliates. All rights reserved.
+$
+
+ls -lh $WALLET_LOCATION
+-rw------- 1 oracle oinstall 3.6K Mar 21 2022 cwallet.sso
+$
+```
+
+```
+# add zdlra credentials to wallet
+
+export WALLET_FILE=$WALLET_LOCATION/cwallet.sso
+
+
+$ORACLE_HOME/bin/mkstore -wrl $WALLET_FILE -createCredential CONNECT_TO_ZDLRA rasys_user strong_password
+Oracle Secret Store Tool : Version 11.2.0.4.0 - Production
+Copyright (c) 2004, 2013, Oracle and/or its affiliates. All rights reserved.
+
+Create credential oracle.security.client.connect_string1
+$
+
+
+# list credentials stored in wallet
+
+$ORACLE_HOME/bin/mkstore -wrl $WALLET_FILE -listCredential
+Oracle Secret Store Tool : Version 11.2.0.4.0 - Production
+Copyright (c) 2004, 2013, Oracle and/or its affiliates. All rights reserved.
+
+List credential (index: connect_string username)
+1: CONNECT_TO_ZDLRA rasys_user
+$
+```
