@@ -9,5 +9,5 @@ Migrate
 FROM : Oracle 11.2.0.4    Grid Infrastructure and RDBMS
   TO : Oracle 19.11.0.0.0 Grid Infrastructure and RDBMS
 ```
-
+---
 ![process.png](https://github.com/sarma1807/Oracle/blob/main/Migration/using_ZDLRA/process.png) <br><br>
