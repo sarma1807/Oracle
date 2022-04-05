@@ -161,6 +161,6 @@ $ crontab -e
 $ crontab -l | grep ZDLRA
 ```
 
-##### our incremental level 1 backups are running very fast : 5TB database backup job is running in less than 15 minutes
+##### our incremental level 1 backups are running very fast : for a 5TB database, backup job is running in less than 15 minutes.
 
 ---
