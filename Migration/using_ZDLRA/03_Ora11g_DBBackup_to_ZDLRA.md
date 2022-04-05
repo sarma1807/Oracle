@@ -156,6 +156,9 @@ $ crontab -e
 ######### run backup job every 8 hours
 15 */8 * * * sh /mnt01/oracle/DBBackup_to_ZDLRA.sh
 #########
+
+
+$ crontab -l | grep ZDLRA
 ```
 
 ##### our incremental level 1 backups are running very fast : 5TB database backup job is running in less than 15 minutes
