@@ -16,3 +16,25 @@ STATUS          SIZE_MB FILENAME
 ---------- ------------ --------------------------------------------------
 DISABLED
 ```
+
+### enable "Block Change Tracking"
+##### enabling "Block Change Tracking" is optional. if enabled, it will speed up the incremental backup process.
+
+```
+-- if DB_CREATE_FILE_DEST is already set while using ASM or in RAC (BCT file can be written to ASM Disk Group)
+SQL>
+ALTER DATABASE ENABLE block change tracking ;
+```
+
+```
+-- if DB_CREATE_FILE_DEST is not set and using ASM
+SQL>
+ALTER DATABASE ENABLE block change tracking USING FILE '+ASM_DATA' ;
+```
+
+```
+-- if DB_CREATE_FILE_DEST is not set and NOT using ASM
+-- REUSE clause, if file already exists
+SQL>
+ALTER DATABASE ENABLE block change tracking USING FILE '/oradata/SALES_DB/block_change_tracking.file' [REUSE] ;
+```
