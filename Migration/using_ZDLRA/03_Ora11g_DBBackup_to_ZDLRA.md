@@ -64,3 +64,41 @@ ALTER DATABASE DISABLE block change tracking ;
 ### now it is time to work with our Oracle ZDLRA administrators to get this database registered with ZDLRA
 ##### due to complexity and product licensing policies, this process is NOT being documented here.
 ---
+
+### RMAN configuration changes
+
+```
+$ export NLS_DATE_FORMAT="DD-MON-YYYY HH24:MI:SS"
+
+### rman catalog connects to ZDLRA using Wallet, which we have configured in the previous step
+$ rman target / catalog /@CONNECT_TO_ZDLRA
+RMAN>
+
+CONFIGURE CHANNEL DEVICE TYPE 'SBT_TAPE' FORMAT '%d_%U' PARMS "SBT_LIBRARY=/mnt01/oracle/product/DBHome11204/lib/libra.so, SBT_PARMS=(RA_WALLET='location=file:/mnt01/oracle/product/DBHome11204/dbs/wallet credential_alias=CONNECT_TO_ZDLRA')" ;
+CONFIGURE CONTROLFILE AUTOBACKUP FORMAT FOR DEVICE TYPE SBT_TAPE TO '%F' ;
+CONFIGURE DEVICE TYPE 'SBT_TAPE' PARALLELISM 8 BACKUP TYPE TO BACKUPSET ;
+CONFIGURE DATAFILE BACKUP COPIES FOR DEVICE TYPE SBT_TAPE TO 1 ;
+CONFIGURE ARCHIVELOG BACKUP COPIES FOR DEVICE TYPE SBT_TAPE TO 1 ;
+
+resync catalog ;
+```
+
+### DB Incremental Level ZERO Backup
+##### we need to perform this backup only once
+
+```
+$ export NLS_DATE_FORMAT="DD-MON-YYYY HH24:MI:SS"
+$ rman target / catalog /@CONNECT_TO_ZDLRA
+RMAN>
+
+backup incremental level 0 cumulative 
+device type sbt 
+filesperset = 3 
+tag 'zdlra_incremental_level_zero_backup' 
+section size 32G 
+database ;
+```
+
+##### first backup will take some time, but future incremental level 1 backups will run fast
+
+---
