@@ -61,3 +61,6 @@ ALTER DATABASE DISABLE block change tracking ;
 ```
 
 ---
+## now it is time to work with our Oracle ZDLRA administrators to get this database registered with ZDLRA
+##### due to complexity and product licensing policies, this process is NOT being documented here.
+---
