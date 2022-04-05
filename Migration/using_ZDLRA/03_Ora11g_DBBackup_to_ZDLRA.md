@@ -17,7 +17,7 @@ STATUS          SIZE_MB FILENAME
 DISABLED
 ```
 
-### enable "Block Change Tracking"
+### ENABLE "Block Change Tracking"
 ##### enabling "Block Change Tracking" is optional. if enabled, it will speed up the incremental backup process.
 
 ```
@@ -38,3 +38,27 @@ ALTER DATABASE ENABLE block change tracking USING FILE '+ASM_DATA' ;
 SQL>
 ALTER DATABASE ENABLE block change tracking USING FILE '/oradata/SALES_DB/block_change_tracking.file' [REUSE] ;
 ```
+
+### check if "Block Change Tracking" is enabled
+
+```
+SQL>
+SELECT status, ceil(bytes/(1024*1024)) size_mb, filename FROM v$block_change_tracking ;
+```
+##### output if "Block Change Tracking" is ENABLED
+```
+STATUS          SIZE_MB FILENAME
+---------- ------------ --------------------------------------------------
+ENABLED             321 +ASM_DATA/SALES/changetracking/ctf.321.2022032100
+```
+
+
+### DISABLE "Block Change Tracking"
+##### if you ever want to disable "Block Change Tracking"
+
+```
+SQL>
+ALTER DATABASE DISABLE block change tracking ;
+```
+
+---
