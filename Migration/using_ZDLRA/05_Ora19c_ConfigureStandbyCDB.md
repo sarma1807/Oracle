@@ -736,6 +736,9 @@ alter system set PDB_FILE_NAME_CONVERT='+ASM_FOR_DATA/O19CPR/','+ASM_FOR_DATA/O1
 
 alter system set STANDBY_FILE_MANAGEMENT=auto SCOPE=spfile SID='*' ;
 
+ALTER SYSTEM SET audit_file_dest='/mnt01/oracle/admin/O19CDR/adump' SCOPE=spfile SID='*' ;
+ALTER SYSTEM SET diagnostic_dest='/mnt01/oracle' SCOPE=both SID='*' ;
+
 SQL> exit ;
 ```
 
