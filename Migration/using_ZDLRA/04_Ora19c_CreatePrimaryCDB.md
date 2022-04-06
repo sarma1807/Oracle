@@ -15,8 +15,8 @@ $ORACLE_HOME=/mnt01/oracle/product/DBHome1911
 ### Create a new Container DB (CDB) using DBCA
 
 ```
-Global DB Name : O19CDB
-SID Prefix     : O19CDB
+Global DB Name : O19CPR
+SID Prefix     : O19CPR
 Use Local UNDO for Pluggable Databases (PDBs)
 Create as Container DB without any PDBs (Empty Container DB)
 ```
