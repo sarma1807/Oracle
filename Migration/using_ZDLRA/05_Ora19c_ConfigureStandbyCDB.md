@@ -90,7 +90,7 @@ $ scp /tmp/orapwO19CPR1 oracle@odr19a.OracleByExample.com:/mnt01/oracle/product/
 ---
 
 ### tnsnames.ora
-##### we have add tnsnames entries on first node of both PRIMARY and STANDBY clusters
+##### we have to add tnsnames entries on first node of both PRIMARY and STANDBY clusters
 
 ```
 # on : ora19a.OracleByExample.com & odr19a.OracleByExample.com
@@ -167,7 +167,7 @@ SQL> ALTER DATABASE flashback on ;
 
 ```
 
-###### it is now time to configure STANDBY related settings
+##### it is now time to configure STANDBY related settings
 
 ```
 # on : ora19a.OracleByExample.com
@@ -193,7 +193,7 @@ alter system set PDB_FILE_NAME_CONVERT='+ASM_FOR_DATA/O19CDR/','+ASM_FOR_DATA/O1
 ```
 
 
-###### it is now time to restart PRIMARY DB
+##### it is now time to restart PRIMARY DB
 
 ```
 # on : ora19a.OracleByExample.com
