@@ -203,3 +203,68 @@ $ srvctl stop   database -db O19CPR
 $ srvctl start  database -db O19CPR
 $ srvctl status database -db O19CPR
 ```
+
+---
+
+### STANDBY DB
+##### we will create a basic pfile and startup nomount STANDBY DB instance on first node
+
+###### required folders
+
+```
+# on all 4 nodes of STANDBY cluster : odr19a.OracleByExample.com/odr19b.OracleByExample.com/odr19c.OracleByExample.com/odr19d.OracleByExample.com
+
+$ mkdir -p /mnt01/oracle/admin/O19CDR/adump
+$ mkdir -p /mnt01/oracle/admin/O19CDR/dpdump
+$ mkdir -p /mnt01/oracle/admin/O19CDR/hdump
+$ mkdir -p /mnt01/oracle/admin/O19CDR/pfile
+$ mkdir -p /mnt01/oracle/admin/O19CDR/xdb_wallet
+```
+
+
+###### STANDBY DB pfile
+
+```
+# on : odr19a.OracleByExample.com
+
+$ vi /tmp/initO19CDR.ora
+###
+DB_NAME=O19CDR
+DB_UNIQUE_NAME=O19CDR
+DB_BLOCK_SIZE=8192
+SGA_TARGET=16G
+PGA_AGGREGATE_TARGET=4G
+LOCAL_LISTENER='(DESCRIPTION=(ADDRESS=(PROTOCOL=tcp)(HOST=odr19a.OracleByExample.com)(PORT=1521)))'
+ENABLE_PLUGGABLE_DATABASE=TRUE
+PROCESSES=3000
+###
+```
+
+
+###### STANDBY DB startup
+
+```
+# on : odr19a.OracleByExample.com
+
+# as RDBMS user/env settings
+
+export ORACLE_BASE=/mnt01/oracle/
+export ORACLE_HOME=/mnt01/oracle/product/DBHome1911
+export ORACLE_UNQNAME=O19CDR
+export ORACLE_SID=O19CDR1
+export NLS_DATE_FORMAT="DD-MON-YYYY HH24:MI:SS"
+
+$ORACLE_HOME/bin/sqlplus / as sysdba
+O19CPR1:SYS@SQL>
+
+STARTUP NOMOUNT pfile='/tmp/initO19CDR.ora' ;
+ALTER SYSTEM register ;
+
+```
+
+
+###### STANDBY DB alert log file
+
+```
+tail -f /mnt01/oracle/diag/rdbms/o19cdr/O19CDR?/trace/alert_O19CDR?.log
+```
