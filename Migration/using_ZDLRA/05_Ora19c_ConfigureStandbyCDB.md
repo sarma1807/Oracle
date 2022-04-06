@@ -64,8 +64,8 @@ ALTER SYSTEM SET dg_broker_start=FALSE                                       SCO
 ```
 # on : ora19a.OracleByExample.com
 
-
 # as grid user/env settings
+
 export ORACLE_BASE=/mnt01/oracle
 export ORACLE_HOME=/mnt01/oracle/grid
 export ORACLE_SID=+ASM1
@@ -267,4 +267,84 @@ ALTER SYSTEM register ;
 
 ```
 tail -f /mnt01/oracle/diag/rdbms/o19cdr/O19CDR?/trace/alert_O19CDR?.log
+```
+
+
+### static listner for STANDBY DB
+
+```
+# on : odr19a.OracleByExample.com
+
+# as grid user/env settings
+
+export ORACLE_BASE=/mnt01/oracle
+export ORACLE_HOME=/mnt01/oracle/grid
+export ORACLE_SID=+ASM1
+
+
+$ vi $ORACLE_HOME/network/admin/listener.ora
+###### add following entry
+SID_LIST_LISTENER = (SID_LIST = (SID_DESC = (GLOBAL_DBNAME = O19CDR) (ORACLE_HOME = /mnt01/oracle/product/DBHome1911) (SID_NAME = O19CDR1)))
+######
+
+
+
+# reload the listener configuration
+
+$ lsnrctl reload
+$ lsnrctl status
+$ lsnrctl status | grep -i O19CDR
+
+# output :
+$ lsnrctl status | grep -i O19CDR
+Service "O19CDR" has 2 instance(s).
+  Instance "O19CDR1", status UNKNOWN, has 1 handler(s) for this service...
+  Instance "O19CDR1", status BLOCKED, has 1 handler(s) for this service...
+$
+
+### at this point both UNKNOWN & BLOCKED statuses are OK and both are required
+```
+
+---
+
+### Connectivity Verification
+
+```
+# on : ora19a.OracleByExample.com and odr19a.OracleByExample.com
+
+# as RDBMS user/env settings
+
+$ORACLE_HOME/bin/sqlplus sys@O19CPR as sysdba
+$ORACLE_HOME/bin/sqlplus sys@O19CDR as sysdba
+
+# both of above should work
+# if we get any errors, then we have to troubleshoot and resolve connectivity issues.
+```
+
+```
+# on : odr19a.OracleByExample.com
+
+# as RDBMS user/env settings
+
+export ORACLE_BASE=/mnt01/oracle/
+export ORACLE_HOME=/mnt01/oracle/product/DBHome1911
+export ORACLE_UNQNAME=O19CDR
+export ORACLE_SID=O19CDR1
+export NLS_DATE_FORMAT="DD-MON-YYYY HH24:MI:SS"
+
+$ORACLE_HOME/bin/rman target sys@O19CPR auxiliary /
+
+
+# output :
+RMAN>
+Recovery Manager: Release 19.0.0.0.0 - Production on Fri Mar 21 03:30:00 2022
+Version 19.11.0.0.0
+Copyright (c) 1982, 2019, Oracle and/or its affiliates.  All rights reserved.
+target database Password: <PASSWORD_REMOVED>
+connected to target database: O19CPR (DBID=2002032100)
+connected to auxiliary database: O19CDR (not mounted)
+RMAN>
+
+# rman connectivity should work
+# if we get any errors, then we have to troubleshoot and resolve connectivity issues.
 ```
