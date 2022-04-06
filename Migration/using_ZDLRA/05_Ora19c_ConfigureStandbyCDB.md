@@ -653,5 +653,207 @@ $
 
 ---
 
-###### STANDBY DB : MOVE CONTROLFILE TO ASM
+### STANDBY DB : MOVE CONTROLFILE TO ASM
+###### standby db controlfile is still on filesystem, we need to move it to asm and update the spfile
 
+```
+# on : odr19a.OracleByExample.com
+
+# as RDBMS user/env settings
+
+export ORACLE_BASE=/mnt01/oracle/
+export ORACLE_HOME=/mnt01/oracle/product/DBHome1911
+export ORACLE_UNQNAME=O19CDR
+export ORACLE_SID=O19CDR1
+
+$ORACLE_HOME/bin/sqlplus / as sysdba
+O19CDR1:SYS@SQL>
+
+shutdown immediate ;
+
+startup nomount ;
+show parameter control_files ;
+
+-- output :
+NAME           TYPE    VALUE
+-------------- ------- ------------------------------
+control_files  string  /mnt01/oracle/product/DBHome1911/dbs/cntrlO19CDR1.dbf
+SQL> exit ;
+
+
+
+$ORACLE_HOME/bin/rman target /
+RMAN>
+
+RESTORE CONTROLFILE TO '+ASM_FOR_DATA' from '/mnt01/oracle/product/DBHome1911/dbs/cntrlO19CDR1.dbf' ;
+RESTORE CONTROLFILE TO '+ASM_FOR_RECO' from '/mnt01/oracle/product/DBHome1911/dbs/cntrlO19CDR1.dbf' ;
+RMAN> exit ;
+
+
+
+$ORACLE_HOME/bin/asmcmd ls -l +ASM_FOR_DATA/O19CDR/CONTROLFILE/
+$ORACLE_HOME/bin/asmcmd ls -l +ASM_FOR_RECO/O19CDR/CONTROLFILE/
+
+# from output of above commands we can see that controlfiles are in following locations :
+
++ASM_FOR_DATA/O19CDR/CONTROLFILE/current.202203.2002032100
++ASM_FOR_RECO/O19CDR/CONTROLFILE/current.200203.2022032100
+
+
+
+$ORACLE_HOME/bin/sqlplus / as sysdba
+O19CDR1:SYS@SQL>
+
+ALTER SYSTEM SET control_files='+ASM_FOR_DATA/O19CDR/CONTROLFILE/current.202203.2002032100','+ASM_FOR_RECO/O19CDR/CONTROLFILE/current.200203.2022032100' SCOPE=spfile SID='*' ;
+
+ALTER SYSTEM SET cluster_database=TRUE SCOPE=spfile SID='*' ;
+ALTER SYSTEM SET cluster_database_instances=4 SCOPE=spfile SID='*' ;
+
+ALTER SYSTEM SET instance_number=1 SCOPE=spfile SID='O19CDR1' ;
+ALTER SYSTEM SET instance_number=2 SCOPE=spfile SID='O19CDR2' ;
+ALTER SYSTEM SET instance_number=3 SCOPE=spfile SID='O19CDR3' ;
+ALTER SYSTEM SET instance_number=4 SCOPE=spfile SID='O19CDR4' ;
+
+ALTER SYSTEM SET thread=1 SCOPE=spfile SID='O19CDR1' ;
+ALTER SYSTEM SET thread=2 SCOPE=spfile SID='O19CDR2' ;
+ALTER SYSTEM SET thread=3 SCOPE=spfile SID='O19CDR3' ;
+ALTER SYSTEM SET thread=4 SCOPE=spfile SID='O19CDR4' ;
+
+ALTER SYSTEM SET undo_tablespace='UNDOTBS1' SCOPE=spfile SID='O19CDR1' ;
+ALTER SYSTEM SET undo_tablespace='UNDOTBS2' SCOPE=spfile SID='O19CDR2' ;
+ALTER SYSTEM SET undo_tablespace='UNDOTBS3' SCOPE=spfile SID='O19CDR3' ;
+ALTER SYSTEM SET undo_tablespace='UNDOTBS4' SCOPE=spfile SID='O19CDR4' ;
+
+
+ALTER SYSTEM SET local_listener='(DESCRIPTION=(ADDRESS=(PROTOCOL=tcp)(HOST=odr19a-vip.OracleByExample.com)(PORT=1521)))' SCOPE=spfile SID='O19CDR1' ;
+ALTER SYSTEM SET local_listener='(DESCRIPTION=(ADDRESS=(PROTOCOL=tcp)(HOST=odr19b-vip.OracleByExample.com)(PORT=1521)))' SCOPE=spfile SID='O19CDR2' ;
+ALTER SYSTEM SET local_listener='(DESCRIPTION=(ADDRESS=(PROTOCOL=tcp)(HOST=odr19c-vip.OracleByExample.com)(PORT=1521)))' SCOPE=spfile SID='O19CDR3' ;
+ALTER SYSTEM SET local_listener='(DESCRIPTION=(ADDRESS=(PROTOCOL=tcp)(HOST=odr19d-vip.OracleByExample.com)(PORT=1521)))' SCOPE=spfile SID='O19CDR4' ;
+
+alter system set  DB_FILE_NAME_CONVERT='+ASM_FOR_DATA/O19CPR/','+ASM_FOR_DATA/O19CDR/','+ASM_FOR_RECO/O19CPR/','+ASM_FOR_RECO/O19CDR/' SID='*' SCOPE=spfile ;
+alter system set LOG_FILE_NAME_CONVERT='+ASM_FOR_DATA/O19CPR/','+ASM_FOR_DATA/O19CDR/','+ASM_FOR_RECO/O19CPR/','+ASM_FOR_RECO/O19CDR/' SID='*' SCOPE=spfile ;
+alter system set PDB_FILE_NAME_CONVERT='+ASM_FOR_DATA/O19CPR/','+ASM_FOR_DATA/O19CDR/','+ASM_FOR_RECO/O19CPR/','+ASM_FOR_RECO/O19CDR/' SID='*' SCOPE=spfile ;
+
+alter system set STANDBY_FILE_MANAGEMENT=auto SCOPE=spfile SID='*' ;
+
+SQL> exit ;
+```
+
+---
+
+### ORATAB ENTRIES
+
+```
+# on all 4 nodes of STANDBY cluster : odr19a.OracleByExample.com/odr19b.OracleByExample.com/odr19c.OracleByExample.com/odr19d.OracleByExample.com
+
+$ vi /etc/oratab
+### need to add following entry, it is it not already added
+O19CDR:/mnt01/oracle/product/DBHome1911:N
+###
+
+
+$ cat /etc/oratab | grep -i O19CDR
+```
+
+---
+
+### STARTUP STANDBY DATABASE
+
+```
+# on : odr19a.OracleByExample.com
+
+# as RDBMS user/env settings
+
+export ORACLE_BASE=/mnt01/oracle/
+export ORACLE_HOME=/mnt01/oracle/product/DBHome1911
+export ORACLE_UNQNAME=O19CDR
+export ORACLE_SID=O19CDR1
+
+$ORACLE_HOME/bin/sqlplus / as sysdba
+O19CDR1:SYS@SQL>
+
+
+-- at this point on standby only 1 instance is running and that is on node 1
+
+shutdown immediate ;
+exit ;
+
+
+$ORACLE_HOME/bin/srvctl start  database -db O19CDR
+$ORACLE_HOME/bin/srvctl status database -db O19CDR
+
+# output :
+$
+Instance O19CDR1 is running on node odr19a
+Instance O19CDR2 is running on node odr19b
+Instance O19CDR3 is running on node odr19c
+Instance O19CDR4 is running on node odr19d
+$
+```
+
+---
+
+### VERIFY FILE_NAME_CONVERT and STANDBY_FILE_MANAGEMENT
+
+```
+-- on both PRIMARY and STANDBY databases
+
+SQL> show parameter FILE_NAME_CONVERT ;
+
+-- make sure these are properly configured
+
+
+
+SQL> show parameter STANDBY_FILE_MANAGEMENT
+
+-- make sure this is set to AUTO - not MANUAL
+```
+
+---
+
+### STARTUP STANDBY DATABASE
+
+```
+# on : odr19a.OracleByExample.com
+
+# as RDBMS user/env settings
+
+export ORACLE_BASE=/mnt01/oracle/
+export ORACLE_HOME=/mnt01/oracle/product/DBHome1911
+export ORACLE_UNQNAME=O19CDR
+export ORACLE_SID=O19CDR1
+
+$ORACLE_HOME/bin/sqlplus / as sysdba
+O19CDR1:SYS@SQL>
+
+
+-- start MRP process on standby to apply redo logs from primary
+ALTER DATABASE RECOVER MANAGED STANDBY DATABASE cancel ;
+ALTER DATABASE RECOVER MANAGED STANDBY DATABASE disconnect from session ;
+```
+
+---
+
+### tnsnames.ora
+##### we have to add tnsnames entries on ALL nodes of both PRIMARY and STANDBY clusters
+##### make sure to use SCAN NAME instead of pointing them to single nodes
+
+```
+# as RDBMS user/env settings
+
+vi $ORACLE_HOME/network/admin/tnsnames.ora
+###### add following entries
+O19CPR = (DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = ora19-scan.OracleByExample.com)(PORT = 1800))(CONNECT_DATA = (SERVER = DEDICATED)(SERVICE_NAME = O19CPR)))
+O19CDR = (DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = odr19-scan.OracleByExample.com)(PORT = 1800))(CONNECT_DATA = (SERVER = DEDICATED)(SERVICE_NAME = O19CDR)))
+######
+
+
+
+# we have verify these from/on ALL nodes of both PRIMARY and STANDBY clusters
+$ORACLE_HOME/bin/tnsping O19CPR | egrep -i "OK|SERVICE_NAME"
+$ORACLE_HOME/bin/tnsping O19CDR | egrep -i "OK|SERVICE_NAME"
+
+
+# output from both of above tnsping commands should look good and they should be pointing to SCAN NAME.
+# if we get any errors, then we have to troubleshoot and resolve connectivity issues.
+```
