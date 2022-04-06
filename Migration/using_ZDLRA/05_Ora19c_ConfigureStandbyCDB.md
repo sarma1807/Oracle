@@ -1,3 +1,8 @@
+```
+Creating a Physical Standby using RMAN Duplicate (RAC or Non-RAC) (Oracle Support Doc ID 1617946.1)
+Step by Step Guide on Creating Physical Standby Using RMAN DUPLICATE...FROM ACTIVE DATABASE (Oracle Support Doc ID 1075908.1)
+```
+
 # PRIMARY Cluster
 
 ```
@@ -11,6 +16,7 @@ ora19d.OracleByExample.com
 $ORACLE_BASE=/mnt01/oracle/
 $ORACLE_HOME=/mnt01/oracle/product/DBHome1911
 ```
+
 
 # STANDBY Cluster
 
@@ -26,10 +32,6 @@ $ORACLE_BASE=/mnt01/oracle/
 $ORACLE_HOME=/mnt01/oracle/product/DBHome1911
 ```
 
-```
-Creating a Physical Standby using RMAN Duplicate (RAC or Non-RAC) (Oracle Support Doc ID 1617946.1)
-Step by Step Guide on Creating Physical Standby Using RMAN DUPLICATE...FROM ACTIVE DATABASE (Oracle Support Doc ID 1075908.1)
-```
 
 ### DISABLE Data Guard Broker
 ##### we will NOT configure/use Data Guard Broker for this cluster
