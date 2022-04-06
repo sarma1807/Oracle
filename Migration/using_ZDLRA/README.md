@@ -11,3 +11,7 @@ FROM : Oracle 11.2.0.4    Grid Infrastructure and RDBMS
 ```
 ---
 ![process.png](https://github.com/sarma1807/Oracle/blob/main/Migration/using_ZDLRA/process.png) <br><br>
+
+---
+
+# ****** ALWAYS TAKE BACKUP BEFORE AND AFTER CHANGING ANY DATABASE SETTINGS OR CONFIGURATION FILES ******
