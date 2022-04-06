@@ -270,7 +270,7 @@ tail -f /mnt01/oracle/diag/rdbms/o19cdr/O19CDR?/trace/alert_O19CDR?.log
 ```
 
 
-### static listner for STANDBY DB
+### static listener for STANDBY DB
 
 ```
 # on : odr19a.OracleByExample.com
@@ -857,3 +857,64 @@ $ORACLE_HOME/bin/tnsping O19CDR | egrep -i "OK|SERVICE_NAME"
 # output from both of above tnsping commands should look good and they should be pointing to SCAN NAME.
 # if we get any errors, then we have to troubleshoot and resolve connectivity issues.
 ```
+
+---
+
+### REMOVE static listener for STANDBY DB
+
+```
+# on : odr19a.OracleByExample.com
+
+# as grid user/env settings
+
+export ORACLE_BASE=/mnt01/oracle
+export ORACLE_HOME=/mnt01/oracle/grid
+export ORACLE_SID=+ASM1
+
+
+$ vi $ORACLE_HOME/network/admin/listener.ora
+###### REMOVE following entry - this entry is no longer required
+# SID_LIST_LISTENER = (SID_LIST = (SID_DESC = (GLOBAL_DBNAME = O19CDR) (ORACLE_HOME = /mnt01/oracle/product/DBHome1911) (SID_NAME = O19CDR1)))
+######
+
+
+
+# reload the listener configuration
+
+$ lsnrctl reload
+$ lsnrctl status
+$ lsnrctl status | grep -i O19CDR
+
+# output :
+$ lsnrctl status | grep -i O19CDR
+Service "O19CDR" has 1 instance(s).
+  Instance "O19CDR1", status READY, has 1 handler(s) for this service...
+$
+
+### at this point we should have only READY status
+```
+
+---
+
+## DATA GUARD : PROTECTION_MODE/PROTECTION_LEVEL
+
+```
+SELECT inst_id, protection_mode, protection_level FROM gv$database ORDER BY 1 ;
+
+   INST_ID PROTECTION_MODE      PROTECTION_LEVEL
+---------- -------------------- --------------------
+         1 MAXIMUM PERFORMANCE  MAXIMUM PERFORMANCE
+         2 MAXIMUM PERFORMANCE  MAXIMUM PERFORMANCE
+         3 MAXIMUM PERFORMANCE  MAXIMUM PERFORMANCE
+         4 MAXIMUM PERFORMANCE  MAXIMUM PERFORMANCE
+
+
+-- PROTECTION_MODE/PROTECTION_LEVEL : most suitable option is to set it to MAXIMUM PERFORMANCE
+
+
+-- if this needs to be changed :
+ALTER DATABASE SET STANDBY DATABASE TO maximize performance ;
+
+```
+
+---
