@@ -32,6 +32,7 @@ $ORACLE_BASE=/mnt01/oracle/
 $ORACLE_HOME=/mnt01/oracle/product/DBHome1911
 ```
 
+---
 
 ### DISABLE Data Guard Broker
 ##### we will NOT configure/use Data Guard Broker for this cluster
@@ -55,6 +56,7 @@ ALTER SYSTEM SET dg_broker_config_file2='+ASM_FOR_DATA/O19CDB/dr2O19CDB.dat' SCO
 ALTER SYSTEM SET dg_broker_start=FALSE                                       SCOPE=both SID='*' ;
 ```
 
+---
 
 ### Copy ORAPW File
 ##### we have to copy ORAPW (password) file from PRIMARY to STANDBY
@@ -84,3 +86,48 @@ $ORACLE_HOME/bin/asmcmd cp +ASM_FOR_DATA/O19CDB/PASSWORD/pwdo19cdb.2002.20020321
 # scp ORAPW file to first node on STANDBY cluster
 $ scp /tmp/orapwO19CDB1 oracle@odr19a.OracleByExample.com:/mnt01/oracle/product/DBHome1911/dbs/orapwO19CDB1
 ```
+
+---
+
+### tnsnames.ora
+##### we have add tnsnames entries on first node of both PRIMARY and STANDBY clusters
+
+```
+# on : ora19a.OracleByExample.com
+
+vi $ORACLE_HOME/network/admin/tnsnames.ora
+###### add following entries
+O19CDB_PR = (DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = ora19a.OracleByExample.com)(PORT = 1521))(CONNECT_DATA = (SERVER = DEDICATED)(SERVICE_NAME = O19CDB)))
+O19CDB_DR = (DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = odr19a.OracleByExample.com)(PORT = 1521))(CONNECT_DATA = (SERVER = DEDICATED)(SERVICE_NAME = O19CDB)(UR = A)))
+######
+
+
+$ORACLE_HOME/bin/tnsping O19CDB_PR | grep OK
+$ORACLE_HOME/bin/tnsping O19CDB_DR | grep OK
+
+
+# output from both of above tnsping commands should look like following :
+OK (0 msec)
+# if we get any other output, then we have to troubleshoot and resolve tns connectivity issues.
+```
+
+```
+# on : odr19a.OracleByExample.com
+
+vi $ORACLE_HOME/network/admin/tnsnames.ora
+###### add following entries
+O19CDB_PR = (DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = ora19a.OracleByExample.com)(PORT = 1521))(CONNECT_DATA = (SERVER = DEDICATED)(SERVICE_NAME = O19CDB)))
+O19CDB_DR = (DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = odr19a.OracleByExample.com)(PORT = 1521))(CONNECT_DATA = (SERVER = DEDICATED)(SERVICE_NAME = O19CDB)(UR = A)))
+######
+
+
+$ORACLE_HOME/bin/tnsping O19CDB_PR | grep OK
+$ORACLE_HOME/bin/tnsping O19CDB_DR | grep OK
+
+
+# output from both of above tnsping commands should look like following :
+OK (0 msec)
+# if we get any other output, then we have to troubleshoot and resolve tns connectivity issues.
+```
+
+---
