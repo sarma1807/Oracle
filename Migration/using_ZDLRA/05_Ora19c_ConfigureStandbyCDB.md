@@ -54,3 +54,33 @@ ALTER SYSTEM SET dg_broker_config_file1='+ASM_FOR_DATA/O19CDB/dr1O19CDB.dat' SCO
 ALTER SYSTEM SET dg_broker_config_file2='+ASM_FOR_DATA/O19CDB/dr2O19CDB.dat' SCOPE=both SID='*' ;
 ALTER SYSTEM SET dg_broker_start=FALSE                                       SCOPE=both SID='*' ;
 ```
+
+
+### Copy ORAPW File
+##### we have to copy ORAPW (password) file from PRIMARY to STANDBY
+
+```
+# on : ora19a.OracleByExample.com
+
+
+# as grid user/env settings
+export ORACLE_BASE=/mnt01/oracle
+export ORACLE_HOME=/mnt01/oracle/grid
+export ORACLE_SID=+ASM1
+
+
+# get ORAPW file details from PRIMARY DB
+$ORACLE_HOME/bin/srvctl config database -db O19CDB | egrep "name|Password"
+Database unique name: O19CDB
+Database name: O19CDB
+Password file: +ASM_FOR_DATA/O19CDB/PASSWORD/pwdo19cdb.2002.2002032100
+$
+
+
+# copy ORAPW file from ASM to FS
+$ORACLE_HOME/bin/asmcmd cp +ASM_FOR_DATA/O19CDB/PASSWORD/pwdo19cdb.2002.2002032100 /tmp/orapwO19CDB1
+
+
+# scp ORAPW file to first node on STANDBY cluster
+$ scp /tmp/orapwO19CDB1 oracle@odr19a.OracleByExample.com:/mnt01/oracle/product/DBHome1911/dbs/orapwO19CDB1
+```
