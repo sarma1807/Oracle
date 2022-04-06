@@ -348,3 +348,43 @@ RMAN>
 # rman connectivity should work
 # if we get any errors, then we have to troubleshoot and resolve connectivity issues.
 ```
+
+---
+
+### SRVCTL ADD DATABASE
+
+```
+# on : odr19a.OracleByExample.com
+
+# as grid user/env settings
+
+export ORACLE_BASE=/mnt01/oracle
+export ORACLE_HOME=/mnt01/oracle/grid
+export ORACLE_SID=+ASM1
+
+# establish the asm diskgroup dependency for the future standby db
+
+$ORACLE_HOME/bin/srvctl add database -db O19CDR -oraclehome /mnt01/oracle/product/DBHome1911 -diskgroup "ASM_FOR_DATA,ASM_FOR_RECO"
+
+
+$ORACLE_HOME/bin/srvctl status database -db O19CDR
+# output :
+Database is not running.
+
+
+
+$ORACLE_HOME/bin/crsctl status resource ora.o19cdr.db -t
+
+# output :
+--------------------------------------------------------------------------------
+Name           Target  State        Server                   State details
+--------------------------------------------------------------------------------
+Cluster Resources
+--------------------------------------------------------------------------------
+ora.o19cdr.db
+      1        OFFLINE OFFLINE                               STABLE
+      2        OFFLINE OFFLINE                               STABLE
+      3        OFFLINE OFFLINE                               STABLE
+      4        OFFLINE OFFLINE                               STABLE
+--------------------------------------------------------------------------------
+```
