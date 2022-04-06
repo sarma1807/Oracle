@@ -255,7 +255,7 @@ export ORACLE_SID=O19CDR1
 export NLS_DATE_FORMAT="DD-MON-YYYY HH24:MI:SS"
 
 $ORACLE_HOME/bin/sqlplus / as sysdba
-O19CPR1:SYS@SQL>
+O19CDR1:SYS@SQL>
 
 STARTUP NOMOUNT pfile='/tmp/initO19CDR.ora' ;
 ALTER SYSTEM register ;
@@ -462,3 +462,196 @@ $ tail -f /tmp/O19CDR_dupdb_from_primary_*.log
 # when completed without any errors, we should have our standby database ready for next steps
 
 ```
+
+---
+
+### FINALIZE STANDBY DATABASE
+
+
+###### standby database configuration changes
+
+```
+# on : odr19a.OracleByExample.com
+
+# as RDBMS user/env settings
+
+export ORACLE_BASE=/mnt01/oracle/
+export ORACLE_HOME=/mnt01/oracle/product/DBHome1911
+export ORACLE_UNQNAME=O19CDR
+export ORACLE_SID=O19CDR1
+
+$ORACLE_HOME/bin/sqlplus / as sysdba
+O19CDR1:SYS@SQL>
+
+-- standby related settings
+alter system set LOG_ARCHIVE_CONFIG='DG_CONFIG=(O19CDR,O19CPR)' ;
+alter system set LOG_ARCHIVE_DEST_1='LOCATION=+ASM_FOR_RECO VALID_FOR=(ALL_LOGFILES,ALL_ROLES) DB_UNIQUE_NAME=O19CDR' ;
+alter system set LOG_ARCHIVE_DEST_2='SERVICE=O19CPR LGWR ASYNC VALID_FOR=(ONLINE_LOGFILE,PRIMARY_ROLE) DB_UNIQUE_NAME=O19CPR' ;
+alter system set LOG_ARCHIVE_DEST_STATE_1=ENABLE ;
+alter system set FAL_SERVER=O19CPR ;
+alter system set FAL_CLIENT=O19CDR ;
+
+-- asm disk group related settings
+alter system set DB_RECOVERY_FILE_DEST_SIZE=200G ;
+alter system set DB_CREATE_FILE_DEST='+ASM_FOR_DATA' ;
+alter system set DB_RECOVERY_FILE_DEST='+ASM_FOR_RECO' ;
+alter system set DB_CREATE_ONLINE_LOG_DEST_1='+ASM_FOR_DATA' ;
+alter system set DB_CREATE_ONLINE_LOG_DEST_2='+ASM_FOR_RECO' ;
+```
+
+
+###### standby database create SPFILE
+
+```
+# on : odr19a.OracleByExample.com
+
+# as RDBMS user/env settings
+
+export ORACLE_BASE=/mnt01/oracle/
+export ORACLE_HOME=/mnt01/oracle/product/DBHome1911
+export ORACLE_UNQNAME=O19CDR
+export ORACLE_SID=O19CDR1
+
+$ORACLE_HOME/bin/sqlplus / as sysdba
+O19CDR1:SYS@SQL>
+
+-- finally create a spfile
+CREATE spfile='+ASM_FOR_DATA' FROM memory ;
+```
+
+
+###### PRIMARY DB extra settings
+
+```
+# on : ora19a.OracleByExample.com
+
+# as RDBMS user/env settings
+
+export ORACLE_BASE=/mnt01/oracle/
+export ORACLE_HOME=/mnt01/oracle/product/DBHome1911
+export ORACLE_UNQNAME=O19CPR
+export ORACLE_SID=O19CPR1
+
+$ORACLE_HOME/bin/sqlplus / as sysdba
+O19CPR1:SYS@SQL>
+
+-- asm disk group related settings
+alter system set DB_RECOVERY_FILE_DEST_SIZE=200G             sid='*' scope=BOTH ;
+alter system set DB_CREATE_FILE_DEST='+ASM_FOR_DATA'         sid='*' scope=BOTH ;
+alter system set DB_RECOVERY_FILE_DEST='+ASM_FOR_RECO'       sid='*' scope=BOTH ;
+alter system set DB_CREATE_ONLINE_LOG_DEST_1='+ASM_FOR_DATA' sid='*' scope=BOTH ;
+alter system set DB_CREATE_ONLINE_LOG_DEST_2='+ASM_FOR_RECO' sid='*' scope=BOTH ;
+```
+
+---
+
+### CONVERT STANDBY AS RAC DATABASE 
+
+###### shutdown standby database
+
+```
+# on : odr19a.OracleByExample.com
+
+# as RDBMS user/env settings
+
+export ORACLE_BASE=/mnt01/oracle/
+export ORACLE_HOME=/mnt01/oracle/product/DBHome1911
+export ORACLE_UNQNAME=O19CDR
+export ORACLE_SID=O19CDR1
+
+$ORACLE_HOME/bin/sqlplus / as sysdba
+O19CDR1:SYS@SQL>
+
+shutdown immediate ;
+```
+
+###### SRVCTL STANDBY DATABASE
+
+```
+# on : odr19a.OracleByExample.com
+
+# as grid user/env settings
+
+export ORACLE_BASE=/mnt01/oracle
+export ORACLE_HOME=/mnt01/oracle/grid
+export ORACLE_SID=+ASM1
+
+### NOTE : ORACLE ACTIVE DATA GUARD WILL REQUIRE SPECIAL LICENSES
+
+$ORACLE_HOME/bin/srvctl modify database -db O19CDR -s 'READ ONLY'
+$ORACLE_HOME/bin/srvctl modify database -db O19CDR -role PHYSICAL_STANDBY
+
+
+### add all 4 instances
+
+$ORACLE_HOME/bin/srvctl add instance -db O19CDR -instance O19CDR1 -node odr19a
+$ORACLE_HOME/bin/srvctl add instance -db O19CDR -instance O19CDR2 -node odr19b
+$ORACLE_HOME/bin/srvctl add instance -db O19CDR -instance O19CDR3 -node odr19c
+$ORACLE_HOME/bin/srvctl add instance -db O19CDR -instance O19CDR4 -node odr19d
+
+
+### ORAPW settings
+
+$ cp /mnt01/oracle/product/DBHome1911/dbs/orapwO19CDR1 /tmp/orapwO19CDR
+
+$ORACLE_HOME/bin/asmcmd pwget    --dbuniquename O19CDR
+$ORACLE_HOME/bin/asmcmd pwdelete --dbuniquename O19CDR
+# at this point ORAPW file should NOT exist on ASM Disk Group
+
+$ORACLE_HOME/bin/asmcmd mkdir +ASM_FOR_DATA/O19CDR/PASSWORD/
+$ORACLE_HOME/bin/asmcmd pwcopy --dbuniquename O19CDR /tmp/orapwO19CDR +ASM_FOR_DATA/O19CDR/PASSWORD/
+
+$ORACLE_HOME/bin/asmcmd pwget --dbuniquename O19CDR
+$ORACLE_HOME/bin/asmcmd ls -l +ASM_FOR_DATA/O19CDR/PASSWORD/
+# at this point ORAPW file should exist on ASM Disk Group
+
+
+$ORACLE_HOME/bin/srvctl config database -db O19CDR | grep Password
+# at this point this should now show current ORAPW file and should properly be pointing to ASM
+
+
+# following files are no longer required
+$ rm /mnt01/oracle/product/DBHome1911/dbs/orapwO19CDR1
+$ rm /tmp/orapwO19CDR
+```
+
+```
+$ORACLE_HOME/bin/srvctl config database -db O19CDR
+
+# output :
+$
+Database unique name: O19CDR
+Database name:
+Oracle home: /mnt01/oracle/product/DBHome1911
+Oracle user: oracle
+Spfile: +ASM_FOR_DATA/O19CDR/PARAMETERFILE/spfile.202203.2002032100
+Password file: +ASM_FOR_DATA/O19CDR/PASSWORD/orapwO19CDR
+Domain:
+Start options: read only
+Stop options: immediate
+Database role: PHYSICAL_STANDBY
+Management policy: AUTOMATIC
+Server pools:
+Disk Groups: ASM_FOR_DATA,ASM_FOR_RECO
+Mount point paths:
+Services:
+Type: RAC
+Start concurrency:
+Stop concurrency:
+OSDBA group: dba
+OSOPER group: dba
+Database instances: O19CDR1,O19CDR2,O19CDR3,O19CDR4
+Configured nodes: odr19a,odr19b,odr19c,odr19d
+CSS critical: no
+CPU count: 0
+Memory target: 0
+Maximum memory: 0
+Default network number for database services:
+Database is administrator managed
+$
+```
+
+---
+
+###### STANDBY DB : MOVE CONTROLFILE TO ASM
+
