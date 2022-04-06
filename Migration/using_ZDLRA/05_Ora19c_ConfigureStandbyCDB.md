@@ -388,3 +388,77 @@ ora.o19cdr.db
       4        OFFLINE OFFLINE                               STABLE
 --------------------------------------------------------------------------------
 ```
+
+---
+
+### RMAN DUPLICATE PRIMARY DATABASE
+##### we will use LIVE database copy method, it might impact applications if PRIMARY DB is under heavy load
+
+
+###### RMAN script
+
+```
+# on : odr19a.OracleByExample.com
+
+
+$ vi /tmp/O19CDR_dupdb_from_primary.rmn
+######
+run {
+  # rman will allow upto 64 channels
+  # higher number of channels will give higher performance and parallelism and will require higher amount of resource too
+
+  allocate channel primary_01 type disk ;
+  allocate channel primary_02 type disk ;
+  allocate channel primary_03 type disk ;
+  allocate channel primary_04 type disk ;
+
+  allocate auxiliary channel standby_01 type disk ;
+  allocate auxiliary channel standby_02 type disk ;
+  allocate auxiliary channel standby_03 type disk ;
+  allocate auxiliary channel standby_04 type disk ;
+
+  DUPLICATE TARGET DATABASE for standby FROM active database DORECOVER NOFILENAMECHECK ;
+}
+######
+
+```
+
+
+###### RMAN shell script
+
+```
+# on : odr19a.OracleByExample.com
+
+
+$ vi /tmp/O19CDR_dupdb_from_primary.sh
+######
+export ORACLE_BASE=/mnt01/oracle/
+export ORACLE_HOME=/mnt01/oracle/product/DBHome1911
+export ORACLE_UNQNAME=O19CDR
+export ORACLE_SID=O19CDR1
+export NLS_DATE_FORMAT="DD-MON-YYYY HH24:MI:SS"
+export RMAN_LOGFILE=/tmp/O19CDR_dupdb_from_primary_`date +'%Y%m%d-%H%M'`.log
+rm $RMAN_LOGFILE
+
+date +'%Y-%m-%d %H:%M' >> $RMAN_LOGFILE
+$ORACLE_HOME/bin/rman target sys/ILovePlayStation@O19CPR auxiliary sys/ILovePlayStation@O19CDR cmdfile /tmp/O19CDR_dupdb_from_primary.rmn >> $RMAN_LOGFILE
+date +'%Y-%m-%d %H:%M' >> $RMAN_LOGFILE
+######
+
+```
+
+
+#### EXECUTE RMAN DUPLICATE PRIMARY DATABASE TO STANDBY
+
+```
+# on : odr19a.OracleByExample.com
+
+$ sh /tmp/O19CDR_dupdb_from_primary.sh
+
+
+# watch the process from log file
+$ tail -f /tmp/O19CDR_dupdb_from_primary_*.log
+
+# when completed without any errors, we should have our standby database ready for next steps
+
+```
