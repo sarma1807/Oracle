@@ -814,7 +814,7 @@ SQL> show parameter STANDBY_FILE_MANAGEMENT
 
 ---
 
-### STARTUP STANDBY DATABASE
+### STARTUP RECOVERY PROCESS ON STANDBY DB
 
 ```
 # on : odr19d.OracleByExample.com
