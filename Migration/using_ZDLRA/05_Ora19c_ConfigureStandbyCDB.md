@@ -34,6 +34,10 @@ $ORACLE_HOME=/mnt01/oracle/product/DBHome1911
 
 ---
 
+## ****** MAKE SURE ARCHIVE REDO LOGS DO NOT GET DELETED ON PRIMARY DB DURING THIS STANDBY DB BUILD ******
+
+---
+
 ### DISABLE Data Guard Broker
 ##### we will NOT configure/use Data Guard Broker for this cluster
 
