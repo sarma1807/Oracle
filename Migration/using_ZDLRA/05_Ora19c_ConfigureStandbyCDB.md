@@ -817,7 +817,7 @@ SQL> show parameter STANDBY_FILE_MANAGEMENT
 ### STARTUP STANDBY DATABASE
 
 ```
-# on : odr19a.OracleByExample.com
+# on : odr19d.OracleByExample.com
 
 # as RDBMS user/env settings
 
@@ -833,6 +833,43 @@ O19CDR1:SYS@SQL>
 -- start MRP process on standby to apply redo logs from primary
 ALTER DATABASE RECOVER MANAGED STANDBY DATABASE cancel ;
 ALTER DATABASE RECOVER MANAGED STANDBY DATABASE disconnect from session ;
+
+
+-- verify status of MRP and RFS processes (these run on STANDBY DB instances)
+-- RFS : Remote File Server process receives REDO data from the PRIMARY DB
+-- MRP : Managed Recovery Process will maintain and apply the archive REDO logs to STANDBY DB
+SELECT inst_id, process, thread#, sequence#, status FROM gv$managed_standby WHERE process LIKE 'MRP%' OR process LIKE 'RFS%' ;
+
+-- output :
+
+   INST_ID PROCESS      THREAD#  SEQUENCE# STATUS
+---------- --------- ---------- ---------- ------------
+         4 MRP0               1        764 APPLYING_LOG
+         3 RFS                4          0 IDLE
+         2 RFS                4       1541 RECEIVING
+         2 RFS                2        662 IDLE
+---------- --------- ---------- ---------- ------------
+
+
+
+-- verify LOG GAP between PRIMARY and STANDBY DB 
+-- if MRP is working perfectly, then delta value should be very close to ZERO
+SELECT a.thread#, applied, not_applied, (not_applied - applied) delta FROM
+(SELECT thread#, max(sequence#) applied FROM gv$archived_log WHERE applied='YES' GROUP BY thread#) a,
+(SELECT thread#, max(sequence#) not_applied FROM gv$archived_log GROUP BY thread#) b
+WHERE a.thread# = b.thread# 
+ORDER BY 1 ;
+
+-- output :
+
+   THREAD#    APPLIED NOT_APPLIED      DELTA
+---------- ---------- ----------- ----------
+         1        763         763          0
+         2        661         661          2
+         3        758         758          1
+         4       1540        1540          0
+---------- ---------- ----------- ----------
+
 ```
 
 ---
