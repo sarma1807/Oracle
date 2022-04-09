@@ -38,7 +38,7 @@ startup ;
 ```
 
 
-### AUXDB Restart & Recompile
+### AUXDB Verify DB Components
 
 ```
 set linesize 200
@@ -75,3 +75,100 @@ XML             Oracle XDK                               19.0.0.0.0      VALID
 
 ```
 
+
+### AUXDB Upgrade TimeZone File
+
+```
+# on : ora19d.OracleByExample.com
+
+export ORACLE_BASE=/mnt01/oracle/
+export ORACLE_HOME=/mnt01/oracle/product/DBHome1911
+export ORACLE_UNQNAME=AUXDB
+export ORACLE_SID=AUXDB
+
+$ORACLE_HOME/bin/sqlplus / as sysdba
+AUXDB:SYS@SQL>
+
+
+-- verify current TimeZone File version
+column VERSION format 999999999999
+SELECT * FROM v$timezone_file ;
+
+FILENAME                   VERSION     CON_ID
+-------------------- ------------- ----------
+timezlrg_14.dat                 14          0
+
+-- NOTICE that currently our AUXDB is using TimeZone File Version 14, and this one is of OLD version
+
+-- FYI : these TimeZone Files are located in : $ORACLE_HOME/oracore/zoneinfo/
+
+
+-- shutdown DB and restart in upgrade mode
+SHUTDOWN IMMEDIATE ;
+STARTUP UPGRADE ;
+
+
+-- begin_upgrade
+SET SERVEROUTPUT ON
+DECLARE
+  l_tz_version PLS_INTEGER ;
+BEGIN
+  l_tz_version := DBMS_DST.get_latest_timezone_version ;
+
+  DBMS_OUTPUT.put_line('l_tz_version=' || l_tz_version) ;
+  DBMS_DST.begin_upgrade(l_tz_version) ;
+END ;
+/
+show errors ;
+
+
+-- shutdown DB and restart
+SHUTDOWN IMMEDIATE ;
+STARTUP ;
+
+
+-- perform_upgrade
+SET SERVEROUTPUT ON
+DECLARE
+  l_failures   PLS_INTEGER ;
+BEGIN
+  DBMS_DST.upgrade_database(l_failures) ;
+  DBMS_OUTPUT.put_line('DBMS_DST.upgrade_database : l_failures=' || l_failures) ;
+  DBMS_DST.end_upgrade(l_failures) ;
+  DBMS_OUTPUT.put_line('DBMS_DST.end_upgrade : l_failures=' || l_failures) ;
+END ;
+/
+show errors ;
+
+
+-- verify current TimeZone File version
+column VERSION format 999999999999
+SELECT * FROM v$timezone_file ;
+
+FILENAME                   VERSION     CON_ID
+-------------------- ------------- ----------
+timezlrg_32.dat                 32          0
+
+-- NOTICE that currently our AUXDB is using TimeZone File Version 32, and this one is the LATEST version for 19c
+
+```
+
+
+### AUXDB Restart and Open in READ ONLY mode
+
+```
+# on : ora19d.OracleByExample.com
+
+export ORACLE_BASE=/mnt01/oracle/
+export ORACLE_HOME=/mnt01/oracle/product/DBHome1911
+export ORACLE_UNQNAME=AUXDB
+export ORACLE_SID=AUXDB
+
+$ORACLE_HOME/bin/sqlplus / as sysdba
+AUXDB:SYS@SQL>
+
+SHUTDOWN IMMEDIATE ;
+STARTUP mount ;
+ALTER DATABASE open read only ;
+
+```
