@@ -215,3 +215,12 @@ $ORACLE_HOME/bin/dbupgrade -n 16 -l /tmp/AUXDB_dbupgrade_logs
 [SAMPLE_OUTPUT](https://github.com/sarma1807/Oracle/blob/main/Migration/using_ZDLRA/09_AuxDB_Upgrade_To_Ora19c_OUTPUT.log)
 
 ---
+
+### AUXDB RE-ENABLE CUSTOM glogin.sql
+
+```
+# on : ora19d.OracleByExample.com
+
+mv $ORACLE_HOME/sqlplus/admin/glogin.sql_original $ORACLE_HOME/sqlplus/admin/glogin.sql
+
+```
