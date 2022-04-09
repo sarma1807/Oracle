@@ -1,0 +1,440 @@
+2022-03-21 03:21
+
+Recovery Manager: Release 11.2.0.4.0 - Production on Mon Mar 21 03:21:00 2022
+
+Copyright (c) 1982, 2011, Oracle and/or its affiliates.  All rights reserved.
+
+connected to target database: SALES (DBID=2002032100)
+connected to recovery catalog database
+connected to auxiliary database: AUXDB (not mounted)
+
+RMAN> run {
+2>   # rman will allow upto 64 channels
+3>   # higher number of channels will give higher performance and parallelism and will require higher amount of resource too
+4> 
+5>   # we have to open auxiliary channels to the sbt lib path and zdlra wallet should point to 19c homes
+6>   ALLOCATE auxiliary CHANNEL sbt01 DEVICE TYPE 'SBT_TAPE' PARMS "SBT_LIBRARY=/mnt01/oracle/product/DBHome1911/lib/libra.so, SBT_PARMS=(RA_WALLET='location=file:/mnt01/oracle/product/DBHome1911/dbs/wallet credential_alias=CONNECT_TO_ZDLRA')" ;
+7>   ALLOCATE auxiliary CHANNEL sbt02 DEVICE TYPE 'SBT_TAPE' PARMS "SBT_LIBRARY=/mnt01/oracle/product/DBHome1911/lib/libra.so, SBT_PARMS=(RA_WALLET='location=file:/mnt01/oracle/product/DBHome1911/dbs/wallet credential_alias=CONNECT_TO_ZDLRA')" ;
+8>   ALLOCATE auxiliary CHANNEL sbt03 DEVICE TYPE 'SBT_TAPE' PARMS "SBT_LIBRARY=/mnt01/oracle/product/DBHome1911/lib/libra.so, SBT_PARMS=(RA_WALLET='location=file:/mnt01/oracle/product/DBHome1911/dbs/wallet credential_alias=CONNECT_TO_ZDLRA')" ;
+9>   ALLOCATE auxiliary CHANNEL sbt04 DEVICE TYPE 'SBT_TAPE' PARMS "SBT_LIBRARY=/mnt01/oracle/product/DBHome1911/lib/libra.so, SBT_PARMS=(RA_WALLET='location=file:/mnt01/oracle/product/DBHome1911/dbs/wallet credential_alias=CONNECT_TO_ZDLRA')" ;
+10> 
+11>   DUPLICATE TARGET DATABASE TO AUXPOL NOOPEN ;
+12> }
+13> 
+14> 
+15> 
+
+allocated channel: sbt01
+channel sbt01: SID=706 device type=SBT_TAPE
+channel sbt01: RA Library VER=19.0.0.1
+
+allocated channel: sbt02
+channel sbt02: SID=770 device type=SBT_TAPE
+channel sbt02: RA Library VER=19.0.0.1
+
+allocated channel: sbt03
+channel sbt03: SID=834 device type=SBT_TAPE
+channel sbt03: RA Library VER=19.0.0.1
+
+allocated channel: sbt04
+channel sbt04: SID=2082 device type=SBT_TAPE
+channel sbt04: RA Library VER=19.0.0.1
+
+
+Starting Duplicate Db at 21-MAR-2022 03:24:17
+
+contents of Memory Script:
+{
+   sql clone "create spfile from memory";
+}
+executing Memory Script
+
+sql statement: create spfile from memory
+
+contents of Memory Script:
+{
+   shutdown clone immediate;
+   startup clone nomount;
+}
+executing Memory Script
+
+Oracle instance shut down
+
+connected to auxiliary database (not started)
+Oracle instance started
+
+Total System Global Area  137408389216 bytes
+
+Fixed Size                    30150752 bytes
+Variable Size              15837691904 bytes
+Database Buffers          121332826112 bytes
+Redo Buffers                 207720448 bytes
+
+allocated channel: sbt01
+channel sbt01: SID=2338 device type=SBT_TAPE
+channel sbt01: RA Library VER=19.0.0.1
+allocated channel: sbt02
+channel sbt02: SID=706 device type=SBT_TAPE
+channel sbt02: RA Library VER=19.0.0.1
+allocated channel: sbt03
+channel sbt03: SID=770 device type=SBT_TAPE
+channel sbt03: RA Library VER=19.0.0.1
+allocated channel: sbt04
+channel sbt04: SID=834 device type=SBT_TAPE
+channel sbt04: RA Library VER=19.0.0.1
+
+contents of Memory Script:
+{
+   sql clone "alter system set  control_files = 
+  ''+ASM_FOR_DATA/AUXDB/CONTROLFILE/current.212121.0303030303'' comment=
+ ''Set by RMAN'' scope=spfile";
+   sql clone "alter system set  db_name = 
+ ''SALES'' comment=
+ ''Modified by RMAN duplicate'' scope=spfile";
+   sql clone "alter system set  db_unique_name = 
+ ''AUXDB'' comment=
+ ''Modified by RMAN duplicate'' scope=spfile";
+   shutdown clone immediate;
+   startup clone force nomount
+   restore clone primary controlfile;
+   alter clone database mount;
+}
+executing Memory Script
+
+sql statement: alter system set  control_files =   ''+ASM_FOR_DATA/AUXDB/CONTROLFILE/current.212121.0303030303'' comment= ''Set by RMAN'' scope=spfile
+
+sql statement: alter system set  db_name =  ''SALES'' comment= ''Modified by RMAN duplicate'' scope=spfile
+
+sql statement: alter system set  db_unique_name =  ''AUXDB'' comment= ''Modified by RMAN duplicate'' scope=spfile
+
+Oracle instance shut down
+
+Oracle instance started
+
+Total System Global Area  137408389216 bytes
+
+Fixed Size                    30150752 bytes
+Variable Size              15837691904 bytes
+Database Buffers          121332826112 bytes
+Redo Buffers                 207720448 bytes
+
+allocated channel: sbt01
+channel sbt01: SID=2274 device type=SBT_TAPE
+channel sbt01: RA Library VER=19.0.0.1
+allocated channel: sbt02
+channel sbt02: SID=770 device type=SBT_TAPE
+channel sbt02: RA Library VER=19.0.0.1
+allocated channel: sbt03
+channel sbt03: SID=834 device type=SBT_TAPE
+channel sbt03: RA Library VER=19.0.0.1
+allocated channel: sbt04
+channel sbt04: SID=898 device type=SBT_TAPE
+channel sbt04: RA Library VER=19.0.0.1
+
+Starting restore at 21-MAR-2022 03:25:17
+
+channel sbt01: starting datafile backup set restore
+channel sbt01: restoring control file
+channel sbt01: reading from backup piece c-3798691506-20220321-00
+channel sbt01: piece handle=c-3798691506-20220321-00 tag=TAG20220321T011802
+channel sbt01: restored backup piece 1
+channel sbt01: restore complete, elapsed time: 00:00:04
+output file name=+ASM_FOR_DATA/AUXDB/CONTROLFILE/current.212121.0303030303
+Finished restore at 21-MAR-2022 03:28:17
+
+database mounted
+
+contents of Memory Script:
+{
+   set until scn  20020321033000;
+   set newname for clone datafile  1 to new;
+   set newname for clone datafile  2 to new;
+   set newname for clone datafile  3 to new;
+   set newname for clone datafile  4 to new;
+... <REMOVED_FROM_THIS_LOG>
+   set newname for clone datafile  98 to new;
+   set newname for clone datafile  99 to new;
+   restore
+   clone database
+   ;
+}
+executing Memory Script
+
+executing command: SET until clause
+
+executing command: SET NEWNAME
+
+executing command: SET NEWNAME
+
+executing command: SET NEWNAME
+
+executing command: SET NEWNAME
+
+... <REMOVED_FROM_THIS_LOG>
+
+executing command: SET NEWNAME
+
+executing command: SET NEWNAME
+
+
+Starting restore at 21-MAR-2022 03:30:17
+
+channel sbt01: starting datafile backup set restore
+channel sbt01: specifying datafile(s) to restore from backup set
+channel sbt01: restoring datafile 00001 to +ASM_FOR_DATA
+channel sbt01: reading from backup piece VB$_3352539260_80700166_61
+channel sbt02: starting datafile backup set restore
+channel sbt02: specifying datafile(s) to restore from backup set
+channel sbt02: restoring datafile 00002 to +ASM_FOR_DATA
+channel sbt02: reading from backup piece VB$_3352539260_80700142_91
+channel sbt03: starting datafile backup set restore
+channel sbt03: specifying datafile(s) to restore from backup set
+channel sbt03: restoring datafile 00003 to +ASM_FOR_DATA
+channel sbt03: reading from backup piece VB$_3352539260_80700134_81
+channel sbt04: starting datafile backup set restore
+channel sbt04: specifying datafile(s) to restore from backup set
+channel sbt04: restoring datafile 00004 to +ASM_FOR_DATA
+channel sbt04: reading from backup piece VB$_3352539260_80700330_15
+
+... <REMOVED_FROM_THIS_LOG>
+
+channel sbt02: restoring datafile 00035 to +ASM_FOR_DATA
+channel sbt02: reading from backup piece VB$_3352539260_80700548_35
+channel sbt02: piece handle=VB$_3352539260_80700548_35 tag=ZDLRA_BACKUP_20220320_010906
+channel sbt02: restored backup piece 1
+channel sbt02: restore complete, elapsed time: 00:03:28
+channel sbt02: starting datafile backup set restore
+channel sbt02: specifying datafile(s) to restore from backup set
+channel sbt02: restoring datafile 00040 to +ASM_FOR_DATA
+channel sbt02: reading from backup piece VB$_3352539260_80700617_40
+
+... <REMOVED_FROM_THIS_LOG>
+
+channel sbt01: piece handle=VB$_3352539260_80701654_93 tag=ZDLRA_BACKUP_20220320_010906
+channel sbt01: restored backup piece 1
+channel sbt01: restore complete, elapsed time: 00:01:11
+Finished restore at 21-MAR-2022 04:03:17
+
+contents of Memory Script:
+{
+   switch clone datafile all;
+}
+executing Memory Script
+
+datafile 1 switched to datafile copy
+input datafile copy RECID=146 STAMP=1101505992 file name=+ASM_FOR_DATA/AUXDB/DATAFILE/system.18155.1101505933
+datafile 2 switched to datafile copy
+input datafile copy RECID=147 STAMP=1101505992 file name=+ASM_FOR_DATA/AUXDB/DATAFILE/sysaux.18168.1101505951
+datafile 3 switched to datafile copy
+input datafile copy RECID=148 STAMP=1101505992 file name=+ASM_FOR_DATA/AUXDB/DATAFILE/undotbs1.18164.1101505947
+datafile 4 switched to datafile copy
+input datafile copy RECID=149 STAMP=1101505993 file name=+ASM_FOR_DATA/AUXDB/DATAFILE/undotbs2.18166.1101505949
+
+... <REMOVED_FROM_THIS_LOG>
+
+datafile 98 switched to datafile copy
+input datafile copy RECID=243 STAMP=1101506004 file name=+ASM_FOR_DATA/AUXDB/DATAFILE/audit.18163.1101505943
+datafile 99 switched to datafile copy
+input datafile copy RECID=244 STAMP=1101506004 file name=+ASM_FOR_DATA/AUXDB/DATAFILE/sales.15866.1101504889
+
+contents of Memory Script:
+{
+   set until scn  20020321033000;
+   recover
+   clone database
+    delete archivelog
+   ;
+}
+executing Memory Script
+
+executing command: SET until clause
+
+Starting recover at 21-MAR-2022 04:05:17
+
+starting media recovery
+
+channel sbt01: starting archived log restore to default destination
+channel sbt01: restoring archived log
+archived log thread=3 sequence=498430
+channel sbt01: reading from backup piece SALES_g70qfldj_1_1
+channel sbt02: starting archived log restore to default destination
+channel sbt02: restoring archived log
+archived log thread=2 sequence=495582
+channel sbt02: reading from backup piece SALES_g80qfldj_1_1
+channel sbt01: piece handle=SALES_g70qfldj_1_1 tag=ZDLRA_BACKUP_20220320_010906
+channel sbt01: restored backup piece 1
+channel sbt01: restore complete, elapsed time: 00:00:02
+channel sbt02: piece handle=SALES_g80qfldj_1_1 tag=ZDLRA_BACKUP_20220319_010906
+channel sbt02: restored backup piece 1
+channel sbt02: restore complete, elapsed time: 00:00:01
+archived log file name=+ASM_FOR_RECO/AUXDB/ARCHIVELOG/2022_03_21/thread_4_seq_520933.103955.1101506097 thread=4 sequence=520933
+archived log file name=+ASM_FOR_RECO/AUXDB/ARCHIVELOG/2022_03_21/thread_1_seq_498292.103975.1101506097 thread=1 sequence=498292
+archived log file name=+ASM_FOR_RECO/AUXDB/ARCHIVELOG/2022_03_21/thread_2_seq_495582.105185.1101506095 thread=2 sequence=495582
+archived log file name=+ASM_FOR_RECO/AUXDB/ARCHIVELOG/2022_03_21/thread_3_seq_498430.105048.1101506095 thread=3 sequence=498430
+channel clone_default: deleting archived log(s)
+archived log file name=+ASM_FOR_RECO/AUXDB/ARCHIVELOG/2022_03_21/thread_4_seq_520933.103955.1101506097 thread=4 sequence=520933
+channel clone_default: deleting archived log(s)
+archived log file name=+ASM_FOR_RECO/AUXDB/ARCHIVELOG/2022_03_21/thread_1_seq_498292.103975.1101506097 thread=1 sequence=498292
+channel clone_default: deleting archived log(s)
+archived log file name=+ASM_FOR_RECO/AUXDB/ARCHIVELOG/2022_03_21/thread_2_seq_495582.105185.1101506095 thread=2 sequence=495582
+channel clone_default: deleting archived log(s)
+archived log file name=+ASM_FOR_RECO/AUXDB/ARCHIVELOG/2022_03_21/thread_3_seq_498430.105048.1101506095 thread=3 sequence=498430
+media recovery complete, elapsed time: 00:00:04
+Finished recover at 21-MAR-2022 04:08:17
+Oracle instance started
+
+Total System Global Area  137408389216 bytes
+
+Fixed Size                    30150752 bytes
+Variable Size              15837691904 bytes
+Database Buffers          121332826112 bytes
+Redo Buffers                 207720448 bytes
+
+contents of Memory Script:
+{
+   sql clone "alter system set  db_name = 
+ ''AUXDB'' comment=
+ ''Reset to original value by RMAN'' scope=spfile";
+   sql clone "alter system reset  db_unique_name scope=spfile";
+   shutdown clone immediate;
+   startup clone nomount;
+}
+executing Memory Script
+
+sql statement: alter system set  db_name =  ''AUXDB'' comment= ''Reset to original value by RMAN'' scope=spfile
+
+sql statement: alter system reset  db_unique_name scope=spfile
+
+Oracle instance shut down
+
+connected to auxiliary database (not started)
+Oracle instance started
+
+Total System Global Area  137408389216 bytes
+
+Fixed Size                    30150752 bytes
+Variable Size              15837691904 bytes
+Database Buffers          121332826112 bytes
+Redo Buffers                 207720448 bytes
+
+allocated channel: sbt01
+channel sbt01: SID=770 device type=SBT_TAPE
+channel sbt01: RA Library VER=19.0.0.1
+allocated channel: sbt02
+channel sbt02: SID=2274 device type=SBT_TAPE
+channel sbt02: RA Library VER=19.0.0.1
+allocated channel: sbt03
+channel sbt03: SID=834 device type=SBT_TAPE
+channel sbt03: RA Library VER=19.0.0.1
+allocated channel: sbt04
+channel sbt04: SID=898 device type=SBT_TAPE
+channel sbt04: RA Library VER=19.0.0.1
+allocated channel: sbt05
+
+sql statement: CREATE CONTROLFILE REUSE SET DATABASE "AUXDB" RESETLOGS ARCHIVELOG 
+  MAXLOGFILES    192
+  MAXLOGMEMBERS      5
+  MAXDATAFILES     1024
+  MAXINSTANCES    32
+  MAXLOGHISTORY    20430
+ LOGFILE
+  GROUP   1  SIZE 50 M ,
+  GROUP   2  SIZE 50 M ,
+  GROUP   3  SIZE 50 M 
+ DATAFILE
+  '+ASM_FOR_DATA/AUXDB/DATAFILE/system.18155.1101505933'
+ CHARACTER SET WE8MSWIN1252
+
+sql statement: ALTER DATABASE ADD LOGFILE 
+  
+  
+  INSTANCE 'i2' 
+  GROUP   4  SIZE 50 M ,
+  GROUP   5  SIZE 50 M ,
+  GROUP   6  SIZE 50 M 
+sql statement: ALTER DATABASE ADD LOGFILE 
+  
+  
+  
+  
+  INSTANCE 'i3' 
+  GROUP   7  SIZE 50 M ,
+  GROUP   8  SIZE 50 M ,
+  GROUP   9  SIZE 50 M 
+sql statement: ALTER DATABASE ADD LOGFILE 
+  
+  
+  
+  
+  
+  
+  INSTANCE 'i4' 
+  GROUP  10  SIZE 50 M ,
+  GROUP  11  SIZE 50 M ,
+  GROUP  12  SIZE 50 M 
+
+contents of Memory Script:
+{
+   set newname for clone tempfile  1 to new;
+   set newname for clone tempfile  2 to new;
+   set newname for clone tempfile  3 to new;
+   set newname for clone tempfile  4 to new;
+   switch clone tempfile all;
+   catalog clone datafilecopy  "+ASM_FOR_DATA/AUXDB/DATAFILE/sysaux.18168.1101505951", 
+ "+ASM_FOR_DATA/AUXDB/DATAFILE/undotbs1.18164.1101505947", 
+ "+ASM_FOR_DATA/AUXDB/DATAFILE/undotbs2.18166.1101505949", 
+... <REMOVED_FROM_THIS_LOG>
+ "+ASM_FOR_DATA/AUXDB/DATAFILE/users.18160.1101505941", 
+ "+ASM_FOR_DATA/AUXDB/DATAFILE/sysaux.18167.1101505949", 
+ "+ASM_FOR_DATA/AUXDB/DATAFILE/sales_data1.18140.1101505851";
+   switch clone datafile all;
+}
+executing Memory Script
+
+executing command: SET NEWNAME
+
+executing command: SET NEWNAME
+
+executing command: SET NEWNAME
+
+executing command: SET NEWNAME
+
+renamed tempfile 1 to +ASM_FOR_DATA in control file
+renamed tempfile 2 to +ASM_FOR_DATA in control file
+renamed tempfile 3 to +ASM_FOR_DATA in control file
+renamed tempfile 4 to +ASM_FOR_DATA in control file
+
+cataloged datafile copy
+datafile copy file name=+ASM_FOR_DATA/AUXDB/DATAFILE/sysaux.18168.1101505951 RECID=1 STAMP=1101506469
+cataloged datafile copy
+datafile copy file name=+ASM_FOR_DATA/AUXDB/DATAFILE/undotbs1.18164.1101505947 RECID=2 STAMP=1101506469
+cataloged datafile copy
+datafile copy file name=+ASM_FOR_DATA/AUXDB/DATAFILE/undotbs2.18166.1101505949 RECID=3 STAMP=1101506469
+cataloged datafile copy
+... <REMOVED_FROM_THIS_LOG>
+cataloged datafile copy
+datafile copy file name=+ASM_FOR_DATA/AUXDB/DATAFILE/sales_data1.18140.1101505851 RECID=102 STAMP=1101506490
+
+datafile 2 switched to datafile copy
+input datafile copy RECID=1 STAMP=1101506469 file name=+ASM_FOR_DATA/AUXDB/DATAFILE/sysaux.18168.1101505951
+datafile 3 switched to datafile copy
+input datafile copy RECID=2 STAMP=1101506469 file name=+ASM_FOR_DATA/AUXDB/DATAFILE/undotbs1.18164.1101505947
+datafile 4 switched to datafile copy
+input datafile copy RECID=3 STAMP=1101506469 file name=+ASM_FOR_DATA/AUXDB/DATAFILE/undotbs2.18166.1101505949
+... <REMOVED_FROM_THIS_LOG>
+datafile 5 switched to datafile copy
+input datafile copy RECID=6 STAMP=1101506470 file name=+ASM_FOR_DATA/AUXDB/DATAFILE/users.18160.1101505941
+datafile 8 switched to datafile copy
+input datafile copy RECID=102 STAMP=1101506490 file name=+ASM_FOR_DATA/AUXDB/DATAFILE/sales_data1.18140.1101505851
+Reenabling controlfile options for auxiliary database
+Executing: alter database force logging
+Executing: alter database enable block change tracking
+Leaving database unopened, as requested
+Finished Duplicate Db at 21-MAR-2022 04:14:17
+released channel: sbt01
+released channel: sbt02
+released channel: sbt03
+released channel: sbt04
+
+Recovery Manager complete.
+2022-03-21 04:15
