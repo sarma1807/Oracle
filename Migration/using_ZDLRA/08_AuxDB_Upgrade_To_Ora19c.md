@@ -41,6 +41,23 @@ export ORACLE_UNQNAME=AUXDB
 export ORACLE_SID=AUXDB
 export NLS_DATE_FORMAT="DD-MON-YYYY HH24:MI:SS"
 
+$ORACLE_HOME/bin/sqlplus / as sysdba
+AUXDB:SYS@SQL>
+
 CREATE spfile='/mnt01/oracle/product/DBHome1911/dbs/spfileAUXDB.ora' FROM memory ;
+
+```
+
+### AUXDB Prepare For Upgrade To Oracle 19c (19.11)
+
+```
+# on : ora19d.OracleByExample.com
+
+$ORACLE_HOME/bin/sqlplus / as sysdba
+AUXDB:SYS@SQL>
+
+SHUTDOWN immediate ;
+STARTUP mount ;
+ALTER DATABASE open RESETLOGS UPGRADE ;
 
 ```
