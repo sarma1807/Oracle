@@ -253,10 +253,9 @@ RMAN>
 ### RMAN DUPLICATE 11g DB To AUXDB On 19c CLUSTER
 ##### we will use LIVE database copy method, but most of the data copy will be done from ZDLRA to 19c CLUSTER
 
-
-###### RMAN script
-
 ### THIS STEP REQUIRES US TO PRE-CONFIGURE "libra.so" and a "wallet" FOR ZDLRA CREDENTIALS ON SERVER "ora19d.OracleByExample.com"
+
+##### RMAN script
 
 ```
 # on : ora11d.OracleByExample.com
@@ -293,3 +292,44 @@ date +'%Y-%m-%d %H:%M' >> $RMAN_LOGFILE
 ######
 
 ```
+
+---
+
+# APPLICATION DOWNTIME STARTS HERE
+
+```
+# on : SALES DB running on ora11a.OracleByExample.com :
+
+
+-- Lock all the application user accounts using :
+
+ALTER USER <app_user> ACCOUNT LOCK ;
+
+
+-- Kill all the application user sessions which are already connected to the database.
+
+
+-- perform SALES database using following script which we have configured in the 3rd step : [03_Ora11g_DBBackup_to_ZDLRA.md](https://github.com/sarma1807/Oracle/blob/main/Migration/using_ZDLRA/03_Ora11g_DBBackup_to_ZDLRA.md) :
+sh /mnt01/oracle/DBBackup_to_ZDLRA.sh
+
+```
+
+---
+
+#### EXECUTE RMAN DUPLICATE 11g DB TO 19c CLUSTER
+
+```
+# on : ora11d.OracleByExample.com
+
+$ sh /tmp/AUXDB_dupdb_from_ZDLRA.sh
+
+
+# watch the process from log file
+$ tail -f /tmp/AUXDB_dupdb_from_ZDLRA_*.log
+
+# when completed without any errors, we should have our SALES 11.2.0.4 version DB duplicated to 19c CLUSTER, but this DB cannot be opened for use.
+# next step is to upgrade this DB to 19c using dbupgrade method
+
+```
+
+---
