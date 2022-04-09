@@ -327,11 +327,11 @@ $ sh /tmp/AUXDB_dupdb_from_ZDLRA.sh
 # watch the process from log file
 $ tail -f /tmp/AUXDB_dupdb_from_ZDLRA_*.log
 
-[SAMPLE_LOG](https://github.com/sarma1807/Oracle/blob/main/Migration/using_ZDLRA/07_AUXDB_dupdb_from_ZDLRA_20220321-0321.log)
-
 # when completed without any errors, we should have our SALES 11.2.0.4 version DB duplicated to 19c CLUSTER, but this DB cannot be opened for use.
 # next step is to upgrade this DB to 19c using dbupgrade method
 
 ```
+
+[SAMPLE_LOG](https://github.com/sarma1807/Oracle/blob/main/Migration/using_ZDLRA/07_AUXDB_dupdb_from_ZDLRA_20220321-0321.log)
 
 ---
