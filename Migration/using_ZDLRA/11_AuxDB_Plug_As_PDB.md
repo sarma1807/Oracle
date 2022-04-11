@@ -250,3 +250,22 @@ FROM gv$containers
 ORDER BY con_id, inst_id ;
 
 ```
+
+---
+
+# APPLICATION DOWNTIME ENDS HERE
+
+```
+# on : ora19d.OracleByExample.com : SALES_PDB :
+
+
+-- Unlock all the application user accounts using :
+
+ALTER USER <app_user> ACCOUNT UNLOCK ;
+
+
+```
+
+# *** NOW YOU CAN ALLOW YOUR APPLICATION USERS TO CONNECT TO THIS NEW PDB ***
+
+---
