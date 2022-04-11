@@ -207,7 +207,7 @@ $ORACLE_HOME/bin/sqlplus / as sysdba
 O19CPR4:SYS@SQL>
 
 
--- change container to new ROOT CDB
+-- change container to ROOT CDB
 ALTER SESSION SET container=CDB$ROOT ;
 
 
@@ -241,7 +241,7 @@ $ORACLE_HOME/bin/sqlplus / as sysdba
 O19CPR4:SYS@SQL>
 
 
--- change container to new ROOT CDB
+-- change container to ROOT CDB
 ALTER SESSION SET container=CDB$ROOT ;
 
 
