@@ -250,6 +250,34 @@ RMAN>
 
 ---
 
+### CAPTURE SCN ON SOURCE DATABASE
+
+```
+# on : ora11d.OracleByExample.com
+
+# as RDBMS user/env settings
+
+export ORACLE_BASE=/mnt01/oracle/
+export ORACLE_HOME=/mnt01/oracle/product/DBHome11204
+export ORACLE_UNQNAME=SALES
+export ORACLE_SID=SALES4
+export NLS_DATE_FORMAT="DD-MON-YYYY HH24:MI:SS"
+
+$ORACLE_HOME/bin/sqlplus / as sysdba
+
+
+ALTER SYSTEM switch all logfile ;
+
+COLUMN dbid        FORMAT 999999999999999999
+COLUMN current_scn FORMAT 999999999999999999
+
+SELECT distinct name db_name, dbid, current_scn FROM gv$database ;
+
+-- we will use this value of CURRENT_SCN during RMAN duplication process
+```
+
+---
+
 ### RMAN DUPLICATE 11g DB To AUXDB On 19c CLUSTER
 ##### we will use LIVE database copy method, but most of the data copy will be done from ZDLRA to 19c CLUSTER
 
@@ -272,7 +300,8 @@ run {
   ALLOCATE auxiliary CHANNEL sbt03 DEVICE TYPE 'SBT_TAPE' PARMS "SBT_LIBRARY=/mnt01/oracle/product/DBHome1911/lib/libra.so, SBT_PARMS=(RA_WALLET='location=file:/mnt01/oracle/product/DBHome1911/dbs/wallet credential_alias=CONNECT_TO_ZDLRA')" ;
   ALLOCATE auxiliary CHANNEL sbt04 DEVICE TYPE 'SBT_TAPE' PARMS "SBT_LIBRARY=/mnt01/oracle/product/DBHome1911/lib/libra.so, SBT_PARMS=(RA_WALLET='location=file:/mnt01/oracle/product/DBHome1911/dbs/wallet credential_alias=CONNECT_TO_ZDLRA')" ;
 
-  DUPLICATE TARGET DATABASE TO AUXPOL NOOPEN ;
+  ### DUPLICATE TARGET DATABASE TO AUXDB NOOPEN ;
+  DUPLICATE TARGET DATABASE TO AUXDB UNTIL SCN <SOURCE_DB_CURRENT_SCN> NOOPEN ;
 }
 ######
 
