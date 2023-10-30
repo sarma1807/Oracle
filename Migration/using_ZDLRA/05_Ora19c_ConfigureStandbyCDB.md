@@ -233,7 +233,7 @@ $ mkdir -p /mnt01/oracle/admin/O19CDR/xdb_wallet
 
 $ vi /tmp/initO19CDR.ora
 ###
-DB_NAME=O19CDR
+DB_NAME=O19CPR
 DB_UNIQUE_NAME=O19CDR
 DB_BLOCK_SIZE=8192
 SGA_TARGET=16G
