@@ -1,0 +1,9 @@
+#!/bin/bash
+
+JAR=/apps/opt/cassandra/myTools/ecs.jar
+
+java -jar $JAR "$@"
+
+
+
+
